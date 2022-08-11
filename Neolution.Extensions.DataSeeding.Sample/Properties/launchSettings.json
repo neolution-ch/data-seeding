@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Neolution.Extensions.DataSeeding.Sample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

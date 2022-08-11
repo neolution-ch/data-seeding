@@ -1,0 +1,7 @@
+mode: Mainline
+branches:
+  master: {}
+  develop: {}
+ignore:
+  sha: []
+merge-message-formats: {}
