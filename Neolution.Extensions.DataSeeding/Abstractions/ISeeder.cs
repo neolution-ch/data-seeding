@@ -11,7 +11,7 @@
         /// <summary>
         /// Seeds the specified seed component.
         /// </summary>
-        /// <returns>An awaitable task.</returns>
+        /// <returns>The <see cref="Task"/>.</returns>
         Task SeedAsync();
     }
 }

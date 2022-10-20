@@ -1,6 +1,7 @@
 ﻿namespace Neolution.Extensions.DataSeeding
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     using Neolution.Extensions.DataSeeding.Abstractions;
@@ -34,14 +35,12 @@
         /// <inheritdoc />
         public async Task SeedAsync()
         {
-            this.logger.LogDebug("Determine seeding order and wrap them up accordingly");
+            this.logger.LogDebug("Determine seeding dependencies and wrap the seeds up accordingly");
             var wraps = Seeding.Instance.WrapSeeds();
-            this.logger.LogDebug("All seeds sorted and wrapped up");
 
-            if (this.logger.IsEnabled(LogLevel.Trace))
+            if (this.logger.IsEnabled(LogLevel.Debug))
             {
-                this.logger.LogTrace("The seeds will be seeded in the following order:");
-
+                this.logger.LogDebug("Resolved dependency graph of the seeds:");
                 for (var index = 0; index < wraps.Count; index++)
                 {
                     var wrap = wraps[index];
@@ -49,8 +48,26 @@
                 }
             }
 
-            this.logger.LogDebug("Unwrap seeds and start seeding...");
-            await Seeding.Instance.UnwrapAndSeedAsync(wraps).ConfigureAwait(false);
+            this.logger.LogTrace("Create a list of sorted seeds based on the dependency graph");
+            var sortedSeeds = new List<ISeed>();
+            Seeding.Instance.RecursiveUnwrap(wraps, sortedSeeds);
+
+            if (this.logger.IsEnabled(LogLevel.Trace))
+            {
+                this.logger.LogTrace("The seeds will be seeded in the following order:");
+                for (var index = 0; index < sortedSeeds.Count; index++)
+                {
+                    var seed = sortedSeeds[index];
+                    this.logger.LogTrace($"{index + 1}.\t{seed.GetType().Name}");
+                }
+            }
+
+            this.logger.LogDebug("Start seeding...");
+            foreach (var seed in sortedSeeds)
+            {
+                await seed.SeedAsync().ConfigureAwait(false);
+            }
+
             this.logger.LogDebug("All seeds have been seeded!");
 
             Seeding.Instance.Dispose();
@@ -73,7 +90,7 @@
                 seedTypeName = seedTypeName[..^suffix.Length];
             }
 
-            this.logger.LogTrace($"{++this.counter}.\t{indent}+- {seedTypeName}");
+            this.logger.LogDebug($"{++this.counter}.\t{indent}+- {seedTypeName}");
             indent += last ? "   " : "|  ";
 
             for (var i = 0; i < wrap.Wrapped.Count; i++)
