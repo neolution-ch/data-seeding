@@ -4,7 +4,7 @@
 From the [database seeding](https://en.wikipedia.org/wiki/Database_seeding) article in Wikipedia:
 > Database seeding is populating a database with an initial set of data. It's common to load seed data such as initial user accounts or dummy data upon initial setup of an application.
 
-The code needed to create an initial state of data for an application can get overwhelmingly complex, even for smaller applications. This means that the source code file responsible for creating, generating, initializing, loading, transforming (...) your data, will eventually end up having tons of different dependencies. When not properly organized, this could create maintainability issues for your application.
+The code needed to create an initial state of data for an application can get overwhelmingly large, even for smaller applications. This means that the source code file responsible for creating, generating, initializing, loading, transforming (...) your data, will eventually end up having thousands of lines of code and tons of different dependencies. When not properly organized, this could create maintainability issues for your application.
 
 This library aims to help developers to divide the whole data seeding logic of an application into small chunks of logic. 
 
