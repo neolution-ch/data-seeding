@@ -1,6 +1,7 @@
 ﻿namespace Neolution.Extensions.DataSeeding.Sample.Commands.Init
 {
     using System;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     using Neolution.DotNet.Console.Abstractions;
     using Neolution.Extensions.DataSeeding.Abstractions;
@@ -8,8 +9,7 @@
     /// <summary>
     /// The data initializer.
     /// </summary>
-    /// <seealso cref="IConsoleAppCommand{TOptions}" />
-    public class InitCommand : IConsoleAppCommand<InitOptions>
+    public class InitCommand : IAsyncConsoleAppCommand<InitOptions>
     {
         /// <summary>
         /// The logger
@@ -32,19 +32,25 @@
             this.seeder = seeder;
         }
 
-        /// <summary>
-        /// Runs the command with the specified options.
-        /// </summary>
-        /// <param name="options">The options.</param>
-        public void Run(InitOptions options)
+        /// <inheritdoc />
+        public Task RunAsync(InitOptions options)
         {
             if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
+            return this.RunInternalAsync();
+        }
+
+        /// <summary>
+        /// Runs the command asynchronously.
+        /// </summary>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
+        private async Task RunInternalAsync()
+        {
             this.logger.LogInformation("Start data initializer...");
-            this.seeder.SeedAsync();
+            await this.seeder.SeedAsync().ConfigureAwait(true);
             this.logger.LogInformation("Data initializer finished!");
         }
     }
