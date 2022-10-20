@@ -16,7 +16,7 @@
         /// <summary>
         /// The data to seed.
         /// </summary>
-        /// <returns>An awaitable task.</returns>
+        /// <returns>The <see cref="Task"/>.</returns>
         Task SeedAsync();
     }
 }

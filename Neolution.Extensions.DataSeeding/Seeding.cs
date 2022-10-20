@@ -4,12 +4,12 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Neolution.Extensions.DataSeeding.Abstractions;
     using Neolution.Extensions.DataSeeding.Internal;
     using SimpleInjector;
+    using SimpleInjector.Lifestyles;
 
     /// <summary>
     /// The Seeding singleton.
@@ -82,6 +82,9 @@
 
             serviceProvider.UseSimpleInjector(this.container);
 
+            // Always verify the container to avoid some runtime headaches
+            this.container.Verify();
+
             var logger = serviceProvider.GetRequiredService<ILogger<Seeding>>();
 
             if (logger.IsEnabled(LogLevel.Trace))
@@ -90,7 +93,10 @@
                 logger.LogTrace($"Assembly full name: '{this.seedsAssembly?.FullName}'");
             }
 
-            this.seeds = this.container.GetAllInstances<ISeed>().ToList();
+            using (AsyncScopedLifestyle.BeginScope(this.container))
+            {
+                this.seeds = this.container.GetAllInstances<ISeed>().ToList();
+            }
 
             logger.LogDebug($"{this.seeds.Count} seeds have been found and loaded");
             logger.LogDebug($"Seeding instance ready");
@@ -106,18 +112,17 @@
         }
 
         /// <summary>
-        /// Recursively unwraps and seeds the seeds contained in the wrap.
+        /// Recursively unwraps the containing seeds and push them into a sorted list.
         /// </summary>
         /// <param name="wraps">The wraps.</param>
-        /// <returns>An awaitable <see cref="Task"/>.</returns>
-        internal async Task UnwrapAndSeedAsync(IList<Wrap> wraps)
+        /// <param name="sortedSeeds">The list of already sorted seeds.</param>
+        internal void RecursiveUnwrap(IEnumerable<Wrap> wraps, List<ISeed> sortedSeeds)
         {
             foreach (var wrap in wraps)
             {
                 var seed = this.Unwrap(wrap);
-                await seed.SeedAsync().ConfigureAwait(false);
-
-                await this.UnwrapAndSeedAsync(wrap.Wrapped).ConfigureAwait(false);
+                sortedSeeds.Add(seed);
+                this.RecursiveUnwrap(wrap.Wrapped, sortedSeeds);
             }
         }
 
