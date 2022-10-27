@@ -107,7 +107,10 @@
         /// <returns>The wrapped seeds.</returns>
         internal IList<Wrap> WrapSeeds()
         {
-            return this.FindDependentSeeds().Select(seed => this.Wrap(seed.GetType())).ToList();
+            return this.FindDependentSeeds()
+                .OrderBy(seed => seed.Priority)
+                .Select(seed => this.Wrap(seed.GetType()))
+                .ToList();
         }
 
         /// <summary>
