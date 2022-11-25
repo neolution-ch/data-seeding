@@ -68,7 +68,7 @@
 
         public async Task SeedAsync<T>() where T : Seed
         {
-            var seed = Seeding.Instance.FindOrderedSeed(typeof(T));
+            var seed = Seeding.Instance.FindSeed<T>();
             await seed.SeedAsync().ConfigureAwait(false);
         }
 

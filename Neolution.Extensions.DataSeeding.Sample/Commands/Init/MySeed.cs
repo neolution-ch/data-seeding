@@ -1,28 +1,37 @@
-﻿namespace Neolution.Extensions.DataSeeding.Sample.Commands.Init;
-
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Neolution.Extensions.DataSeeding.Abstractions;
-using Neolution.Extensions.DataSeeding.Sample.Commands.Init.Seeds;
-
-public class MySeed : Seed
+﻿namespace Neolution.Extensions.DataSeeding.Sample.Commands.Init
 {
-    private readonly ILogger<MySeed> logger;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using Neolution.Extensions.DataSeeding.Abstractions;
+    using Neolution.Extensions.DataSeeding.Sample.Commands.Init.Seeds;
 
-    public MySeed(ILogger<MySeed> logger)
+    /// <inheritdoc />
+    public class MySeed : Seed
     {
-        this.logger = logger;
+        /// <summary>
+        /// The logger
+        /// </summary>
+        private readonly ILogger<MySeed> logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MySeed"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public MySeed(ILogger<MySeed> logger)
+        {
+            this.logger = logger;
+        }
+
+        /// <inheritdoc />
+        public override async Task SeedAsync()
+        {
+            this.logger.LogInformation("Start Seed");
+
+            await this.SeedAsync<MasterSeed>().ConfigureAwait(true);
+            await this.SeedAsync<TenantsSeed>().ConfigureAwait(true);
+            await this.SeedAsync<UsersSeed>().ConfigureAwait(true);
+
+            this.logger.LogInformation("Seed finished!");
+        }
     }
-
-    public override async Task SeedAsync()
-    {
-        this.logger.LogInformation("Start Seed");
-
-        await this.SeedAsync<MasterSeed>();
-        await this.SeedAsync<TenantsSeed>();
-        await this.SeedAsync<UsersSeed>();
-
-        this.logger.LogInformation("Seed finished!");
-    }
-
 }

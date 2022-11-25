@@ -31,7 +31,10 @@
         /// </summary>
         private Container? container;
 
-        private IReadOnlyList<Seed> orderedSeeds = Enumerable.Empty<Seed>().ToList();
+        /// <summary>
+        /// The seeds
+        /// </summary>
+        private IReadOnlyList<Seed> seeds = Enumerable.Empty<Seed>().ToList();
 
         /// <summary>
         /// Prevents a default instance of the <see cref="Seeding"/> class from being created.
@@ -98,7 +101,7 @@
             using (AsyncScopedLifestyle.BeginScope(this.container))
             {
                 this.Seeds = this.container.GetAllInstances<ISeed>().ToList();
-                this.orderedSeeds = this.container.GetAllInstances<Seed>().ToList();
+                this.seeds = this.container.GetAllInstances<Seed>().ToList();
             }
 
             logger.LogDebug($"{this.Seeds.Count} seeds have been found and loaded");
@@ -130,6 +133,17 @@
                 sortedSeeds.Add(seed);
                 this.RecursiveUnwrap(wrap.Wrapped, sortedSeeds);
             }
+        }
+
+        /// <summary>
+        /// Finds the seed.
+        /// </summary>
+        /// <typeparam name="T">The type of the seed.</typeparam>
+        /// <returns>The found <see cref="Seed"/>.</returns>
+        internal Seed FindSeed<T>()
+            where T : Seed
+        {
+            return this.seeds.Single(x => x.GetType() == typeof(T));
         }
 
         /// <summary>
@@ -169,11 +183,6 @@
         private ISeed Unwrap(Wrap wrap)
         {
             return this.Seeds.Single(x => x.GetType() == wrap.SeedType);
-        }
-
-        internal Seed FindOrderedSeed(Type orderedSeedType)
-        {
-            return this.orderedSeeds.Single(x => x.GetType() == orderedSeedType);
         }
     }
 }
