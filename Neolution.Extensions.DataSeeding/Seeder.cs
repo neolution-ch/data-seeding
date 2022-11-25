@@ -66,7 +66,9 @@
             this.logger.LogDebug("All seeds have been seeded!");
         }
 
-        public async Task SeedAsync<T>() where T : Seed
+        /// <inheritdoc />
+        public async Task SeedAsync<T>()
+            where T : Seed
         {
             var seed = Seeding.Instance.FindSeed<T>();
             await seed.SeedAsync().ConfigureAwait(false);

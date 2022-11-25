@@ -15,6 +15,12 @@
         /// <returns>The <see cref="Task"/>.</returns>
         Task SeedAsync();
 
-        Task SeedAsync<T>() where T : Seed;
+        /// <summary>
+        /// Seeds the specified seed component.
+        /// </summary>
+        /// <typeparam name="T">The seed type.</typeparam>
+        /// <returns>The <see cref="Task"/>.</returns>
+        Task SeedAsync<T>()
+            where T : Seed;
     }
 }

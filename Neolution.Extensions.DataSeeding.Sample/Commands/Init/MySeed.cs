@@ -27,9 +27,9 @@
         {
             this.logger.LogInformation("Start Seed");
 
-            await this.SeedAsync<MasterSeed>().ConfigureAwait(true);
-            await this.SeedAsync<TenantsSeed>().ConfigureAwait(true);
-            await this.SeedAsync<UsersSeed>().ConfigureAwait(true);
+            await SeedAsync<MasterSeed>().ConfigureAwait(true);
+            await SeedAsync<TenantsSeed>().ConfigureAwait(true);
+            await SeedAsync<UsersSeed>().ConfigureAwait(true);
 
             this.logger.LogInformation("Seed finished!");
         }

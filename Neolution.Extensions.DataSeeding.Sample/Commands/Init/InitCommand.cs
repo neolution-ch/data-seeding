@@ -49,17 +49,15 @@
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         private async Task RunInternalAsync()
         {
-            /*
             this.logger.LogInformation("Start data initializer...");
-            await this.seeder.SeedAsync().ConfigureAwait(true);
-            this.logger.LogInformation("Data initializer finished!");
-            */
 
-            // Bisher
+            // Automatic seeding
             await this.seeder.SeedAsync().ConfigureAwait(true);
 
-            // Zusätzliche Möglichkeit
+            // Manual seeding
             await this.seeder.SeedAsync<MySeed>().ConfigureAwait(true);
+
+            this.logger.LogInformation("Data initializer finished!");
         }
     }
 }
