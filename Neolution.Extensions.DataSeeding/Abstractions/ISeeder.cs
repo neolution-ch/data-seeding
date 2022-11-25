@@ -1,5 +1,6 @@
 ﻿namespace Neolution.Extensions.DataSeeding.Abstractions
 {
+    using System;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -13,5 +14,7 @@
         /// </summary>
         /// <returns>The <see cref="Task"/>.</returns>
         Task SeedAsync();
+
+        Task SeedOrderedAsync(Type orderedSeedType);
     }
 }
