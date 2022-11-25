@@ -17,11 +17,6 @@
         private readonly ILogger<Seeder> logger;
 
         /// <summary>
-        /// The counter (used for tracing)
-        /// </summary>
-        private int counter;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="Seeder" /> class.
         /// </summary>
         /// <param name="serviceProvider">The service provider.</param>
@@ -40,7 +35,7 @@
 
             if (this.logger.IsEnabled(LogLevel.Debug))
             {
-                this.logger.LogDebug("Resolved dependency graph of the seeds:");
+                this.logger.LogDebug("Resolved dependency tree of the seeds:");
                 for (var index = 0; index < wraps.Count; index++)
                 {
                     var wrap = wraps[index];
@@ -48,7 +43,7 @@
                 }
             }
 
-            this.logger.LogTrace("Create a list of sorted seeds based on the dependency graph");
+            this.logger.LogTrace("Create a list of sorted seeds based on the dependency tree");
             var sortedSeeds = new List<ISeed>();
             Seeding.Instance.RecursiveUnwrap(wraps, sortedSeeds);
 
@@ -90,7 +85,7 @@
                 seedTypeName = seedTypeName[..^suffix.Length];
             }
 
-            this.logger.LogDebug($"{++this.counter}.\t{indent}+- {seedTypeName}");
+            this.logger.LogDebug($"{indent}+- {seedTypeName}");
             indent += last ? "   " : "|  ";
 
             for (var i = 0; i < wrap.Wrapped.Count; i++)

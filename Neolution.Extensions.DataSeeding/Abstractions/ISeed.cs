@@ -9,6 +9,11 @@
     public interface ISeed
     {
         /// <summary>
+        /// Gets the priority of this seed. Lower number means higher priority. Default is 1.
+        /// </summary>
+        public int Priority => 1;
+
+        /// <summary>
         /// Gets the seed type this seed depends on.
         /// </summary>
         public Type? DependsOn => null;

@@ -17,12 +17,12 @@
         /// <param name="args">The arguments.</param>
         public static void Main(string[] args)
         {
-            var console = CreateConsoleAppBuilder(args).Build();
+            var console = CreateConsoleAppBuilder(args).AsyncBuild();
             var logger = LogManager.Setup().LoadConfigurationFromSection(console.Configuration).GetCurrentClassLogger();
 
             try
             {
-                console.Run();
+                console.RunAsync();
             }
             catch (Exception ex)
             {

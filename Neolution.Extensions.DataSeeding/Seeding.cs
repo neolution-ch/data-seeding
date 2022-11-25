@@ -81,10 +81,6 @@
             }
 
             serviceProvider.UseSimpleInjector(this.container);
-
-            // Always verify the container to avoid some runtime headaches
-            this.container.Verify();
-
             var logger = serviceProvider.GetRequiredService<ILogger<Seeding>>();
 
             if (logger.IsEnabled(LogLevel.Trace))
@@ -92,6 +88,9 @@
                 logger.LogTrace("Scan configured assembly for seeds");
                 logger.LogTrace($"Assembly full name: '{this.seedsAssembly?.FullName}'");
             }
+
+            // Always verify the container to avoid some runtime headaches
+            this.container.Verify();
 
             using (AsyncScopedLifestyle.BeginScope(this.container))
             {
@@ -108,7 +107,10 @@
         /// <returns>The wrapped seeds.</returns>
         internal IList<Wrap> WrapSeeds()
         {
-            return this.FindDependentSeeds().Select(seed => this.Wrap(seed.GetType())).ToList();
+            return this.FindDependentSeeds()
+                .OrderBy(seed => seed.Priority)
+                .Select(seed => this.Wrap(seed.GetType()))
+                .ToList();
         }
 
         /// <summary>
