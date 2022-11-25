@@ -31,7 +31,7 @@
         /// </summary>
         private Container? container;
 
-        private IReadOnlyList<OrderedSeed> orderedSeeds = Enumerable.Empty<OrderedSeed>().ToList();
+        private IReadOnlyList<Seed> orderedSeeds = Enumerable.Empty<Seed>().ToList();
 
         /// <summary>
         /// Prevents a default instance of the <see cref="Seeding"/> class from being created.
@@ -69,7 +69,7 @@
             this.container = new Container();
             services.AddSimpleInjector(this.container);
             this.container.Collection.Register<ISeed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
-            this.container.Collection.Register<OrderedSeed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
+            this.container.Collection.Register<Seed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@
             using (AsyncScopedLifestyle.BeginScope(this.container))
             {
                 this.Seeds = this.container.GetAllInstances<ISeed>().ToList();
-                this.orderedSeeds = this.container.GetAllInstances<OrderedSeed>().ToList();
+                this.orderedSeeds = this.container.GetAllInstances<Seed>().ToList();
             }
 
             logger.LogDebug($"{this.Seeds.Count} seeds have been found and loaded");
@@ -171,7 +171,7 @@
             return this.Seeds.Single(x => x.GetType() == wrap.SeedType);
         }
 
-        internal OrderedSeed FindOrderedSeed(Type orderedSeedType)
+        internal Seed FindOrderedSeed(Type orderedSeedType)
         {
             return this.orderedSeeds.Single(x => x.GetType() == orderedSeedType);
         }

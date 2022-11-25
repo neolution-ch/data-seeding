@@ -1,20 +1,19 @@
 ﻿namespace Neolution.Extensions.DataSeeding.Abstractions
 {
-    using System;
     using System.Linq;
     using System.Threading.Tasks;
 
-    public abstract class OrderedSeed
+    public abstract class Seed
     {
-        protected async Task SeedAsync(Type seedType)
+        protected async Task SeedAsync<T>() where T : ISeed
         {
-            var seed = Seeding.Instance.Seeds.FirstOrDefault(x => x.GetType() == seedType);
+            var seed = Seeding.Instance.Seeds.FirstOrDefault(x => x.GetType() == typeof(T));
             if (seed != null)
             {
                 await seed.SeedAsync();
             }
         }
 
-        public abstract Task RunAsync();
+        public abstract Task SeedAsync();
     }
 }

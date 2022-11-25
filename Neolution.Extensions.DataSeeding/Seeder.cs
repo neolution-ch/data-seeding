@@ -66,13 +66,10 @@
             this.logger.LogDebug("All seeds have been seeded!");
         }
 
-        public async Task SeedAsync(Type orderedSeedType)
+        public async Task SeedAsync<T>() where T : Seed
         {
-            if (orderedSeedType.IsAssignableTo(typeof(OrderedSeed)))
-            {
-                var orderedSeed = Seeding.Instance.FindOrderedSeed(orderedSeedType);
-                await orderedSeed.RunAsync().ConfigureAwait(false);
-            }
+            var seed = Seeding.Instance.FindOrderedSeed(typeof(T));
+            await seed.SeedAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc />

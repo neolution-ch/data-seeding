@@ -59,7 +59,7 @@
             await this.seeder.SeedAsync().ConfigureAwait(true);
 
             // Zusätzliche Möglichkeit
-            await this.seeder.SeedAsync(typeof(MyOrderedSeed)).ConfigureAwait(true);
+            await this.seeder.SeedAsync<MySeed>().ConfigureAwait(true);
         }
     }
 }
