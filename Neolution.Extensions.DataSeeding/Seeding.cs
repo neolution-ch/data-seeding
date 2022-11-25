@@ -31,11 +31,6 @@
         /// </summary>
         private Container? container;
 
-        /// <summary>
-        /// Gets the seeds.
-        /// </summary>
-        private IReadOnlyList<ISeed> seeds = Enumerable.Empty<ISeed>().ToList();
-
         private IReadOnlyList<OrderedSeed> orderedSeeds = Enumerable.Empty<OrderedSeed>().ToList();
 
         /// <summary>
@@ -50,7 +45,10 @@
         /// </summary>
         internal static Seeding Instance => Lazy.Value;
 
-        public IReadOnlyList<ISeed> Seeds => this.seeds;
+        /// <summary>
+        /// Gets the seeds.
+        /// </summary>
+        internal IReadOnlyList<ISeed> Seeds { get; private set; } = Enumerable.Empty<ISeed>().ToList();
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -99,11 +97,11 @@
 
             using (AsyncScopedLifestyle.BeginScope(this.container))
             {
-                this.seeds = this.container.GetAllInstances<ISeed>().ToList();
+                this.Seeds = this.container.GetAllInstances<ISeed>().ToList();
                 this.orderedSeeds = this.container.GetAllInstances<OrderedSeed>().ToList();
             }
 
-            logger.LogDebug($"{this.seeds.Count} seeds have been found and loaded");
+            logger.LogDebug($"{this.Seeds.Count} seeds have been found and loaded");
             logger.LogDebug($"Seeding instance ready");
         }
 
@@ -141,7 +139,7 @@
         /// <returns>The dependent seeds.</returns>
         private IEnumerable<ISeed> FindDependentSeeds(Type? seedType = null)
         {
-            return this.seeds.Where(x => x.DependsOn == seedType).ToList();
+            return this.Seeds.Where(x => x.DependsOn == seedType).ToList();
         }
 
         /// <summary>
@@ -170,10 +168,10 @@
         /// <returns>The containing seed.</returns>
         private ISeed Unwrap(Wrap wrap)
         {
-            return this.seeds.Single(x => x.GetType() == wrap.SeedType);
+            return this.Seeds.Single(x => x.GetType() == wrap.SeedType);
         }
 
-        public OrderedSeed FindOrderedSeed(Type orderedSeedType)
+        internal OrderedSeed FindOrderedSeed(Type orderedSeedType)
         {
             return this.orderedSeeds.Single(x => x.GetType() == orderedSeedType);
         }

@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     using Neolution.Extensions.DataSeeding.Abstractions;
@@ -67,11 +66,13 @@
             this.logger.LogDebug("All seeds have been seeded!");
         }
 
-        public async Task SeedOrderedAsync(Type orderedSeedType)
+        public async Task SeedAsync(Type orderedSeedType)
         {
-            var orderedSeed = Seeding.Instance.FindOrderedSeed(orderedSeedType);
-            orderedSeed.InitSeeds(Seeding.Instance.Seeds);
-            await orderedSeed.RunAsync().ConfigureAwait(false);
+            if (orderedSeedType.IsAssignableTo(typeof(OrderedSeed)))
+            {
+                var orderedSeed = Seeding.Instance.FindOrderedSeed(orderedSeedType);
+                await orderedSeed.RunAsync().ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc />
@@ -105,33 +106,5 @@
                 this.LogWrapTree(wrap.Wrapped[i], i == wrap.Wrapped.Count - 1, indent);
             }
         }
-    }
-
-    public abstract class OrderedSeed
-    {
-        private bool seedsSet = false;
-        private IReadOnlyList<ISeed> seeds = Enumerable.Empty<ISeed>().ToList();
-
-        public void InitSeeds(IReadOnlyList<ISeed> seeds)
-        {
-            if (seedsSet)
-            {
-                throw new InvalidOperationException("Seeds already initiated");
-            }
-
-            this.seeds = seeds;
-            this.seedsSet = true;
-        }
-
-        public async Task SeedAsync(Type seedType)
-        {
-            var seed = this.seeds.FirstOrDefault(x => x.GetType() == seedType);
-            if (seed != null)
-            {
-                await seed.SeedAsync();
-            }
-        }
-
-        public abstract Task RunAsync();
     }
 }

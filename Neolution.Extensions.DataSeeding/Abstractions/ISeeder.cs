@@ -15,6 +15,6 @@
         /// <returns>The <see cref="Task"/>.</returns>
         Task SeedAsync();
 
-        Task SeedOrderedAsync(Type orderedSeedType);
+        Task SeedAsync(Type orderedSeedType);
     }
 }
