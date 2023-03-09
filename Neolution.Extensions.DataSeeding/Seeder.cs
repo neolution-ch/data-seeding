@@ -9,7 +9,7 @@
 
     /// <inheritdoc cref="ISeeder" />
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "Resolved as a singleton by DI container")]
-    internal sealed class Seeder : ISeeder, IDisposable
+    internal sealed class Seeder : ISeeder, IAsyncDisposable
     {
         /// <summary>
         /// The logger.
@@ -75,9 +75,9 @@
         }
 
         /// <inheritdoc />
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            Seeding.Instance.Dispose();
+            await Seeding.Instance.DisposeAsync().ConfigureAwait(false);
         }
 
         /// <summary>

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Neolution.Extensions.DataSeeding.Abstractions;
@@ -14,7 +15,7 @@
     /// <summary>
     /// The Seeding singleton.
     /// </summary>
-    internal sealed class Seeding : IDisposable
+    internal sealed class Seeding : IAsyncDisposable
     {
         /// <summary>
         /// The lazy singleton instantiation.
@@ -37,6 +38,11 @@
         private IReadOnlyList<Seed> seeds = Enumerable.Empty<Seed>().ToList();
 
         /// <summary>
+        /// The scope
+        /// </summary>
+        private Scope? scope;
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="Seeding"/> class from being created.
         /// </summary>
         private Seeding()
@@ -53,12 +59,18 @@
         /// </summary>
         internal IReadOnlyList<ISeed> Seeds { get; private set; } = Enumerable.Empty<ISeed>().ToList();
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
         {
-            this.container?.Dispose();
+            if (this.scope is not null)
+            {
+                await this.scope.DisposeAsync().ConfigureAwait(false);
+            }
+
+            if (this.container is not null)
+            {
+                await this.container.DisposeAsync().ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -98,11 +110,10 @@
             // Always verify the container to avoid some runtime headaches
             this.container.Verify();
 
-            using (AsyncScopedLifestyle.BeginScope(this.container))
-            {
-                this.Seeds = this.container.GetAllInstances<ISeed>().ToList();
-                this.seeds = this.container.GetAllInstances<Seed>().ToList();
-            }
+            // Open scope for container and resolve all seeds that are registered
+            this.scope = AsyncScopedLifestyle.BeginScope(this.container);
+            this.Seeds = this.container.GetAllInstances<ISeed>().ToList();
+            this.seeds = this.container.GetAllInstances<Seed>().ToList();
 
             logger.LogDebug($"{this.Seeds.Count} seeds have been found and loaded");
             logger.LogDebug($"Seeding instance ready");
