@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Neolution.Extensions.DataSeeding.Abstractions;
@@ -14,7 +15,7 @@
     /// <summary>
     /// The Seeding singleton.
     /// </summary>
-    internal sealed class Seeding : IDisposable
+    internal sealed class Seeding : IAsyncDisposable
     {
         /// <summary>
         /// The lazy singleton instantiation.
@@ -32,9 +33,14 @@
         private Container? container;
 
         /// <summary>
-        /// Gets the seeds.
+        /// The seeds
         /// </summary>
-        private IReadOnlyList<ISeed> seeds = Enumerable.Empty<ISeed>().ToList();
+        private IReadOnlyList<Seed> seeds = Enumerable.Empty<Seed>().ToList();
+
+        /// <summary>
+        /// The scope
+        /// </summary>
+        private Scope? scope;
 
         /// <summary>
         /// Prevents a default instance of the <see cref="Seeding"/> class from being created.
@@ -49,11 +55,22 @@
         internal static Seeding Instance => Lazy.Value;
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// Gets the seeds.
         /// </summary>
-        public void Dispose()
+        internal IReadOnlyList<ISeed> Seeds { get; private set; } = Enumerable.Empty<ISeed>().ToList();
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
         {
-            this.container?.Dispose();
+            if (this.scope is not null)
+            {
+                await this.scope.DisposeAsync().ConfigureAwait(false);
+            }
+
+            if (this.container is not null)
+            {
+                await this.container.DisposeAsync().ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -67,6 +84,7 @@
             this.container = new Container();
             services.AddSimpleInjector(this.container);
             this.container.Collection.Register<ISeed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
+            this.container.Collection.Register<Seed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
         }
 
         /// <summary>
@@ -92,12 +110,12 @@
             // Always verify the container to avoid some runtime headaches
             this.container.Verify();
 
-            using (AsyncScopedLifestyle.BeginScope(this.container))
-            {
-                this.seeds = this.container.GetAllInstances<ISeed>().ToList();
-            }
+            // Open scope for container and resolve all seeds that are registered
+            this.scope = AsyncScopedLifestyle.BeginScope(this.container);
+            this.Seeds = this.container.GetAllInstances<ISeed>().ToList();
+            this.seeds = this.container.GetAllInstances<Seed>().ToList();
 
-            logger.LogDebug($"{this.seeds.Count} seeds have been found and loaded");
+            logger.LogDebug($"{this.Seeds.Count} seeds have been found and loaded");
             logger.LogDebug($"Seeding instance ready");
         }
 
@@ -129,13 +147,24 @@
         }
 
         /// <summary>
+        /// Finds the seed.
+        /// </summary>
+        /// <typeparam name="T">The type of the seed.</typeparam>
+        /// <returns>The found <see cref="Seed"/>.</returns>
+        internal Seed FindSeed<T>()
+            where T : Seed
+        {
+            return this.seeds.Single(x => x.GetType() == typeof(T));
+        }
+
+        /// <summary>
         /// Finds the seeds that depend on the specified seed type.
         /// </summary>
         /// <param name="seedType">Type of the seed.</param>
         /// <returns>The dependent seeds.</returns>
         private IEnumerable<ISeed> FindDependentSeeds(Type? seedType = null)
         {
-            return this.seeds.Where(x => x.DependsOn == seedType).ToList();
+            return this.Seeds.Where(x => x.DependsOn == seedType).ToList();
         }
 
         /// <summary>
@@ -164,7 +193,7 @@
         /// <returns>The containing seed.</returns>
         private ISeed Unwrap(Wrap wrap)
         {
-            return this.seeds.Single(x => x.GetType() == wrap.SeedType);
+            return this.Seeds.Single(x => x.GetType() == wrap.SeedType);
         }
     }
 }
