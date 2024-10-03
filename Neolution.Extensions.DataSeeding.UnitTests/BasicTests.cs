@@ -2,8 +2,6 @@
 {
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
-    using Neolution.Extensions.DataSeeding;
-    using Neolution.Extensions.DataSeeding.Abstractions;
     using Neolution.Extensions.DataSeeding.UnitTests.Fakes;
     using Neolution.Extensions.DataSeeding.UnitTests.Fakes.MultiTenantSeeds;
     using Shouldly;

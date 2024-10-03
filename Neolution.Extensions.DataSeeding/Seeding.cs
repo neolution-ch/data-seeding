@@ -19,7 +19,12 @@
         /// <summary>
         /// The lazy singleton instantiation.
         /// </summary>
-        private static readonly Lazy<Seeding> Lazy = new (() => new Seeding());
+        private static readonly Lazy<Seeding> Lazy = new(() => new Seeding());
+
+        /// <summary>
+        /// The services of the application that is using seeding.
+        /// </summary>
+        private IServiceCollection? services;
 
         /// <summary>
         /// The assembly that contains the seeds.
@@ -63,10 +68,8 @@
         /// <param name="assembly">The assembly containing the <see cref="ISeed"/> implementations.</param>
         internal void Configure(IServiceCollection services, Assembly assembly)
         {
+            this.services = services;
             this.seedsAssembly = assembly;
-            this.container = new Container();
-            services.AddSimpleInjector(this.container);
-            this.container.Collection.Register<ISeed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
         }
 
         /// <summary>
@@ -75,10 +78,20 @@
         /// <param name="serviceProvider">The service provider.</param>
         internal void UseServiceProvider(IServiceProvider serviceProvider)
         {
-            if (this.container is null)
+            if (this.services is null)
             {
-                throw new InvalidOperationException("Cannot use the service provider. The container was null.");
+                throw new InvalidOperationException("The service collection of the application is null. Did you call the Configure() method before calling this?");
             }
+
+            if (this.seedsAssembly is null)
+            {
+                throw new InvalidOperationException("Cannot find the assembly containing the seeds. Did you call the Configure() method before calling this?");
+            }
+
+            // Create an isolated DI container just for the seeds but register the services from the application to let the seeds inject them.
+            this.container = new Container();
+            this.services.AddSimpleInjector(this.container);
+            this.container.Collection.Register<ISeed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
 
             serviceProvider.UseSimpleInjector(this.container);
             var logger = serviceProvider.GetRequiredService<ILogger<Seeding>>();

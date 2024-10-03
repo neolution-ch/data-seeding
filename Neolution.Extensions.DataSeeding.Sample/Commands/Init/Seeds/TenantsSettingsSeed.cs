@@ -1,7 +1,6 @@
 ﻿namespace Neolution.Extensions.DataSeeding.Sample.Commands.Init.Seeds
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     using Neolution.Extensions.DataSeeding.Abstractions;
