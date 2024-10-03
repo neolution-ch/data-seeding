@@ -50,7 +50,13 @@
         private async Task RunInternalAsync()
         {
             this.logger.LogInformation("Start data initializer...");
+
+            // Automatic seeding
             await this.seeder.SeedAsync().ConfigureAwait(true);
+
+            // Manual seeding
+            await this.seeder.SeedAsync<MySeed>().ConfigureAwait(true);
+
             this.logger.LogInformation("Data initializer finished!");
         }
     }
