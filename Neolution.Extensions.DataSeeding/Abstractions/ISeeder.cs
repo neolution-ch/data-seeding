@@ -1,6 +1,5 @@
 ﻿namespace Neolution.Extensions.DataSeeding.Abstractions
 {
-    using System;
     using System.Threading.Tasks;
 
     /// <summary>

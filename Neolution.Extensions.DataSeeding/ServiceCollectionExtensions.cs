@@ -2,9 +2,7 @@
 {
     using System.Reflection;
     using Microsoft.Extensions.DependencyInjection;
-    using Neolution.Extensions.DataSeeding;
     using Neolution.Extensions.DataSeeding.Abstractions;
-    using Neolution.Extensions.DataSeeding.Internal;
 
     /// <summary>
     /// Extension methods for the <see cref="IServiceCollection"/>

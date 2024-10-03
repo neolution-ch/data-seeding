@@ -14,7 +14,7 @@
         private readonly ISeeder seeder;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataInitializerFake"/> class.
+        /// Initializes a new instance of the <see cref="DataInitializerFake" /> class.
         /// </summary>
         /// <param name="seeder">The seeder.</param>
         public DataInitializerFake(ISeeder seeder)
