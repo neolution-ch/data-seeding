@@ -16,8 +16,22 @@
         /// <param name="assembly">The assembly.</param>
         public static void AddDataSeeding(this IServiceCollection services, Assembly assembly)
         {
-            services.AddSingleton<ISeeder, Seeder>();
-            Seeding.Instance.Configure(services, assembly);
+            services.AddTransient<ISeeder, Seeder>();
+            Seeding.Instance.Configure(assembly);
+
+            // Register ISeed implementations
+            services.Scan(scan => scan
+                .FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo<ISeed>())
+                .AsImplementedInterfaces()
+                .WithTransientLifetime());
+
+            // Register Seed implementations
+            services.Scan(scan => scan
+                .FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo<Seed>())
+                .AsSelf()
+                .WithTransientLifetime());
         }
     }
 }

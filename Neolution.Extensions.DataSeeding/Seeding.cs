@@ -4,18 +4,15 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Neolution.Extensions.DataSeeding.Abstractions;
     using Neolution.Extensions.DataSeeding.Internal;
-    using SimpleInjector;
-    using SimpleInjector.Lifestyles;
 
     /// <summary>
     /// The Seeding singleton.
     /// </summary>
-    internal sealed class Seeding : IAsyncDisposable
+    internal sealed class Seeding
     {
         /// <summary>
         /// The lazy singleton instantiation.
@@ -23,29 +20,14 @@
         private static readonly Lazy<Seeding> Lazy = new(() => new Seeding());
 
         /// <summary>
-        /// The services of the application that is using seeding.
-        /// </summary>
-        private IServiceCollection? services;
-
-        /// <summary>
         /// The assembly that contains the seeds.
         /// </summary>
         private Assembly? seedsAssembly;
 
         /// <summary>
-        /// The container.
-        /// </summary>
-        private Container? container;
-
-        /// <summary>
         /// The seeds
         /// </summary>
         private IReadOnlyList<Seed> seeds = Enumerable.Empty<Seed>().ToList();
-
-        /// <summary>
-        /// The scope
-        /// </summary>
-        private Scope? scope;
 
         /// <summary>
         /// Prevents a default instance of the <see cref="Seeding"/> class from being created.
@@ -64,28 +46,12 @@
         /// </summary>
         internal IReadOnlyList<ISeed> Seeds { get; private set; } = Enumerable.Empty<ISeed>().ToList();
 
-        /// <inheritdoc />
-        public async ValueTask DisposeAsync()
-        {
-            if (this.scope is not null)
-            {
-                await this.scope.DisposeAsync().ConfigureAwait(false);
-            }
-
-            if (this.container is not null)
-            {
-                await this.container.DisposeAsync().ConfigureAwait(false);
-            }
-        }
-
         /// <summary>
         /// Configures the services with the internal dependency injection container and scans the specified assembly for data seeds.
         /// </summary>
-        /// <param name="services">The services.</param>
         /// <param name="assembly">The assembly containing the <see cref="ISeed"/> implementations.</param>
-        internal void Configure(IServiceCollection services, Assembly assembly)
+        public void Configure(Assembly assembly)
         {
-            this.services = services;
             this.seedsAssembly = assembly;
         }
 
@@ -95,23 +61,11 @@
         /// <param name="serviceProvider">The service provider.</param>
         internal void UseServiceProvider(IServiceProvider serviceProvider)
         {
-            if (this.services is null)
-            {
-                throw new InvalidOperationException("The service collection of the application is null. Did you call the Configure() method before calling this?");
-            }
-
             if (this.seedsAssembly is null)
             {
                 throw new InvalidOperationException("Cannot find the assembly containing the seeds. Did you call the Configure() method before calling this?");
             }
 
-            // Create an isolated DI container just for the seeds but register the services from the application to let the seeds inject them.
-            this.container = new Container();
-            this.services.AddSimpleInjector(this.container);
-            this.container.Collection.Register<ISeed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
-            this.container.Collection.Register<Seed>(new[] { this.seedsAssembly }, Lifestyle.Transient);
-
-            serviceProvider.UseSimpleInjector(this.container);
             var logger = serviceProvider.GetRequiredService<ILogger<Seeding>>();
 
             if (logger.IsEnabled(LogLevel.Trace))
@@ -120,13 +74,9 @@
                 logger.LogTrace($"Assembly full name: '{this.seedsAssembly?.FullName}'");
             }
 
-            // Always verify the container to avoid some runtime headaches
-            this.container.Verify();
-
-            // Open scope for container and resolve all seeds that are registered
-            this.scope = AsyncScopedLifestyle.BeginScope(this.container);
-            this.Seeds = this.container.GetAllInstances<ISeed>().ToList();
-            this.seeds = this.container.GetAllInstances<Seed>().ToList();
+            // Resolve all seeds that are registered
+            this.Seeds = serviceProvider.GetServices<ISeed>().ToList();
+            this.seeds = serviceProvider.GetServices<Seed>().ToList();
 
             logger.LogDebug($"{this.Seeds.Count} seeds have been found and loaded");
             logger.LogDebug($"Seeding instance ready");
