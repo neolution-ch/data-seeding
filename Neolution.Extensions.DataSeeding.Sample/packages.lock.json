@@ -26,9 +26,9 @@
       },
       "Neolution.CodeAnalysis": {
         "type": "Direct",
-        "requested": "[3.1.1, )",
-        "resolved": "3.1.1",
-        "contentHash": "DSEK4NpUt/dZHnWJzoFLW5XZ2ehfTXhLZW4jUQC2jLWxXdPMdPDzSIhzzd0qaUNmx6/d+7m9dzJAJleTzmUwWg==",
+        "requested": "[3.1.2, )",
+        "resolved": "3.1.2",
+        "contentHash": "pdKfYvkYwLD8/CIQdJrVFHXcOTX+7uHHxcJSqtzGx05BGgN3rSEC+Fd7SRQtr5x3Q0gfOYoMhemoz+1l6NeUpA==",
         "dependencies": {
           "SonarAnalyzer.CSharp": "8.56.0.67649",
           "StyleCop.Analyzers.Unstable": "1.2.0.556"

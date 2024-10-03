@@ -10,7 +10,7 @@
     <PackageReference Include="AWS.Logger.NLog" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageReference Include="Neolution.DotNet.Console" Version="1.1.0-beta0001" />
-    <PackageReference Include="Neolution.CodeAnalysis" Version="3.1.1">
+    <PackageReference Include="Neolution.CodeAnalysis" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
